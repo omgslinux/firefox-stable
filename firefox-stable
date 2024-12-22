@@ -1,0 +1,43 @@
+#!/bin/bash
+set -x
+OFILE=/tmp/firefox-latest.tar.bz2
+LFILE=/tmp/firefox.log
+wget "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=es-ES" -O $OFILE -o $LFILE
+VERSION=$(grep releases $LFILE|awk -F/ '{ print $7 }'|head -n 1)
+
+echo "#!/bin/bash
+MOZILLA_HOME=/usr/local/firefox
+\$MOZILLA_HOME/firefox \$@ &
+">/usr/local/bin/firefox
+chmod a+x /usr/local/bin/firefox
+
+for F in /usr/local/firefox-*;do
+    if [[ /usr/local/firefox-$VERSION != $F ]];then
+	rm -rf $F
+    fi
+done
+
+if [ -d /usr/local/firefox-$VERSION ];then
+    echo "No se actualiza"
+else
+    if [ -f /usr/local/firefox ];then
+	rm /usr/local/firefox 2>/dev/null
+    fi
+
+    if [ -f /usr/local/firefox-${VERSION}/firefox-bin ];then
+	if [[ -z $(ps -ef|grep firefox-${VERSION}) ]];then
+	    rm -rf /usr/local/firefox-$VERSION
+	else
+	    echo "Se está ejecutando"
+	fi
+    fi
+
+    echo "Descomprimiendo firefox $VERSION..."
+    tar jxf $OFILE -C /usr/local
+
+    mv /usr/local/firefox/ /usr/local/firefox-$VERSION
+    ln -s firefox-$VERSION /usr/local/firefox
+
+fi
+
+rm $OFILE 2>/dev/null
