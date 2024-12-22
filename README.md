@@ -1,5 +1,5 @@
 # firefox-stable
-Bash script for linux to have the stable release for linux from Mozilla Foundation
+Bash script for linux to have the stable release from Mozilla Foundation
 
 ## Purpose
 Any reason you can think of for having the oficial and overall working firefox release for linux, instead of the snap or any other that can have issues.
