@@ -2,7 +2,8 @@
 set -x
 OFILE=/tmp/firefox-latest.tar.bz2
 LFILE=/tmp/firefox.log
-wget "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=es-ES" -O $OFILE -o $LFILE
+FXLANG=${1:-es-ES}
+wget "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=${FXLANG}" -O $OFILE -o $LFILE
 VERSION=$(grep releases $LFILE|awk -F/ '{ print $7 }'|head -n 1)
 
 echo "#!/bin/bash
