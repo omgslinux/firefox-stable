@@ -1,40 +1,52 @@
 #!/bin/bash
 set -x
-OFILE=/tmp/firefox-latest.tar.bz2
-LFILE=/tmp/firefox.log
+OFILE=/tmp/firefox-latest.tar.bz2         
+LFILE=/tmp/firefox.log    
 FXLANG=${1:-es-ES}
 wget "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=${FXLANG}" -O $OFILE -o $LFILE
-VERSION=$(grep releases $LFILE|awk -F/ '{ print $7 }'|head -n 1)
-
+VERSION=$(grep releases $LFILE|awk -F/ '{ print $7 }'|head -n 1) 
+                                
 echo "#!/bin/bash
-MOZILLA_HOME=/usr/local/firefox
-\$MOZILLA_HOME/firefox \$@ &
-">/usr/local/bin/firefox
-chmod a+x /usr/local/bin/firefox
+MOZILLA_HOME=/usr/local/firefox                                 
+\$MOZILLA_HOME/firefox \$@ &                                    
+">/usr/local/bin/firefox                                        
+chmod a+x /usr/local/bin/firefox 
+                                                                
+if (( $(ps -ef|grep /usr/local/firefox-|head -n2|wc -l) == 2 ));then
+    echo "Corriendo firefox"
+    OLDVERSION=$(ps -ef|grep /usr/local/firefox-|head -n1|awk '{ print $8 }')
+    for F in /usr/local/firefox-*;do          
+        if [[ $OLDVERSION != $F/firefox-bin ]];then
+                rm -rf $F
+        fi                                                      
+    done                                                        
 
-for F in /usr/local/firefox-*;do
-    if [[ /usr/local/firefox-$VERSION != $F ]];then
-	rm -rf $F
-    fi
-done
+else
+    echo "Firefox no está corriendo"
+    for F in /usr/local/firefox-*;do
+        if [[ /usr/local/firefox-$VERSION != $F ]];then
+                rm -rf $F
+        fi
+    done
+fi
 
 if [ -d /usr/local/firefox-$VERSION ];then
     echo "No se actualiza"
 else
     if [ -f /usr/local/firefox ];then
-	rm /usr/local/firefox 2>/dev/null
+        rm /usr/local/firefox 2>/dev/null
     fi
 
     if [ -f /usr/local/firefox-${VERSION}/firefox-bin ];then
-	if [[ -z $(ps -ef|grep firefox-${VERSION}) ]];then
-	    rm -rf /usr/local/firefox-$VERSION
-	else
-	    echo "Se está ejecutando"
-	fi
+        if [[ -z $(ps -ef|grep firefox-${VERSION}) ]];then
+            echo "rm -rf /usr/local/firefox-$VERSION"
+        else
+            echo "Se está ejecutando"
+        fi
     fi
 
     echo "Descomprimiendo firefox $VERSION..."
-    tar jxf $OFILE -C /usr/local
+    tar jxf $OFILE -C /usr/local 
 
     mv /usr/local/firefox/ /usr/local/firefox-$VERSION
     ln -s firefox-$VERSION /usr/local/firefox
